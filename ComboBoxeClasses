@@ -1,0 +1,97 @@
+using System.Threading.Tasks;
+using System.Windows.Controls;
+
+namespace WpfApp1
+{
+    public interface IControlProcessing
+    {
+        Task Create();
+        void ControlPosition(int? rowNum, int columnNum, Grid grid);
+        void ControlPosition(StackPanel sp);
+    }
+}
+
+
+
+using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Input;
+
+namespace WpfApp1
+{
+    public abstract class ControlComboBox : ComboBox, IControlProcessing
+    {
+        private StackPanel Sp {  get; set; }
+        public string SelectedValueValue { get; protected set; }
+        public string DisplayedValueValue { get; protected set; }
+        protected abstract void DefineItemsSource();
+        protected override void OnSelectionChanged(SelectionChangedEventArgs e)
+        {
+            base.OnSelectionChanged(e);
+            DisplayedValueValue = Text;
+            SelectedValueValue = (string)SelectedValue;
+        }
+        public void ControlPosition(int? rowNum, int columnNum, Grid grid)
+        {
+            if (rowNum != null)
+            {
+                
+                Grid.SetRow(this, (int)rowNum);
+                Grid.SetColumn(this, columnNum);
+                grid.Children.Add(this);
+            }
+            else
+            {
+                ControlPosition(Sp);
+            }
+        }
+
+        public void ControlPosition(StackPanel sp)
+        {
+            sp?.Children.Add(this);
+        }
+
+        public Task Create()
+        {
+            Width = 300;
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Left;
+            Margin = new System.Windows.Thickness(5);
+            return Task.CompletedTask;
+        }
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+            if (e.Key == Key.Delete)
+            {
+                SelectedIndex = -1;
+            }
+        }
+
+        public ControlComboBox(int? rowNum, int columnNum, StackPanel sp, Grid grid)
+        {
+            Sp = sp;
+            Create();
+            ControlPosition(rowNum, columnNum, grid);
+        }
+    }
+}
+
+
+using System.Collections.Generic;
+using System.Windows.Controls;
+
+namespace WpfApp1
+{
+    public class DocEnt_CB : ControlComboBox
+    {
+        public DocEnt_CB(int? rowNum, int columnNum, StackPanel sp, Grid grid) : base(rowNum, columnNum, sp, grid)
+        {
+            DefineItemsSource();
+        }
+
+        protected override void DefineItemsSource()
+        {
+            ItemsSource = new List<string> { "Item1", "Item2", "Item3" };
+        }
+    }
+}
